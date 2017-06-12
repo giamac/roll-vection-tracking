@@ -14,9 +14,6 @@ import time
 import datetime
 from datetime import date
 
-#start vrpn
-vrpn = viz.addExtension('vrpn7.dle')
-
 #Ask for mode
 presentations = ['oculus','normal']
 presentationMode = vizinput.choose('Presentation Mode', presentations)
@@ -88,7 +85,7 @@ tracker_coordinates = []
 
 #now add all trackers and link a shape to it
 for i in range(0, 24):
-	t = vrpn.addTracker( 'Tracker0@localhost',i )
+	t = vrpn.addTracker('Tracker0@localhost',i)
 	s = vizshape.addSphere(radius=0.01)
 	s.color(viz.GREEN)
 	s.visible(viz.OFF)
@@ -112,7 +109,68 @@ with open('data/'+ subject + '_' + run + '_' + str(datetime.datetime.fromtimesta
 	'Global_Time', 'Trial_Time', 'Frame_No.','Frame_Elapsed', 'Frame_Time'], delimiter = ';')
 	writer.writeheader()
 
+class RollVection():
 
+	def __init__(self):
+		self.POINTSIZE = 22
+
+		# Opens file 'response.txt' in write mode
+		self.file = open('data/response_subject_' + subject + '_run_' + run + '.txt', 'w')
+
+	# Create a function for the circles
+
+	def createCircles(self,NUM_DOTS,RADIUS,POINTSIZE,VELOCITYDIRECTION):
+
+			#Build sphere
+		viz.startLayer(viz.POINTS)
+		viz.vertexColor(viz.WHITE)
+		viz.pointSize(POINTSIZE)
+
+		for i in range(0, NUM_DOTS):
+			x = RADIUS*math.cos((i*2*math.pi)/NUM_DOTS)
+			y = RADIUS*math.sin((i*2*math.pi)/NUM_DOTS)
+			viz.vertex([x,y,0])
+
+		sphere = viz.endLayer()
+		sphere.setPosition([0,1.8,4])
+		sphere.addAction(vizact.spin(0,0,1,VELOCITYDIRECTION))
+		return sphere
+
+
+	# Define a function that saves data
+	def SaveData(self, currenttime, key):
+		# Create the output string
+		out = str(currenttime) + '\t' + key + '\n'
+		# Write the string to the output file
+		file.write(out)
+		# Makes sure the file data is really written to the harddrive
+		file.flush()
+		print out
+
+	# Define a function that is called every time a keyboard button is pressed
+	def mykeyboard(self, key):
+		# Calls the function SaveData and hands it the current time and key
+		SaveData(viz.tick(),key)
+
+	def motion(self):
+
+		# Create Fixation Dot
+		viz.startLayer(viz.POINTS)
+		viz.pointSize(POINTSIZE)
+		viz.vertexColor(viz.GRAY)
+		viz.vertex(0,1.8,4)
+		points = vijz.endLayer()
+		points.disable(viz.CULLING)
+
+		# Create the circles
+		sphere = createCircles(26,1,POINTSIZE,-26)
+		sphere2 = createCircles(22,0.8,POINTSIZE,-26)
+		sphere3 = createCircles(18,0.6,POINTSIZE,-26)
+		sphere4 = createCircles(14,0.4,POINTSIZE,-26)
+		sphere5 = createCircles(10,0.2,POINTSIZE,-26)
+		viz.MainView.move([0,0,3])
+		viz.callback(viz.KEYDOWN_EVENT, mykeyboard)
+		yield viztask.waitTime(100)
 
 class CenterOfMass(viz.EventClass):
 
@@ -287,88 +345,7 @@ class CenterOfMass(viz.EventClass):
 
 
 
-# Create a function for the circles
 
-def createCircles(NUM_DOTS,RADIUS,POINTSIZE,VELOCITYDIRECTION):
-
-		#Build sphere
-	viz.startLayer(viz.POINTS)
-	viz.vertexColor(viz.WHITE)
-	viz.pointSize(POINTSIZE)
-
-	for i in range(0, NUM_DOTS):
-		x = RADIUS*math.cos((i*2*math.pi)/NUM_DOTS)
-		y = RADIUS*math.sin((i*2*math.pi)/NUM_DOTS)
-		viz.vertex([x,y,0])
-
-	sphere = viz.endLayer()
-	sphere.setPosition([0,1.8,4])
-	sphere.addAction(vizact.spin(0,0,1,VELOCITYDIRECTION))
-	return sphere
-
-
-	# DOT SIZE
-POINTSIZE = 22
-
-
-# Opens file 'response.txt' in write mode
-file = open('data/response_subject_' + subject + '_run_' + run + '.txt', 'w')
-
-# Define a function that saves data
-def SaveData(currenttime, key):
-	# Create the output string
-	out = str(currenttime) + '\t' + key + '\n'
-	# Write the string to the output file
-	file.write(out)
-	# Makes sure the file data is really written to the harddrive
-	file.flush()
-	print out
-
-# Define a function that is called every time a keyboard button is pressed
-def mykeyboard(key):
-	# Calls the function SaveData and hands it the current time and key
-	SaveData(viz.tick(),key)
-
-def left():
-
-	# Create Fixation Dot
-	viz.startLayer(viz.POINTS)
-	viz.pointSize(POINTSIZE)
-	viz.vertexColor(viz.GRAY)
-	viz.vertex(0,1.8,4)
-	points = viz.endLayer()
-	points.disable(viz.CULLING)
-
-		# Create the circles
-	sphere = createCircles(26,0.30,POINTSIZE,26)
-	sphere2 = createCircles(22,0.24,POINTSIZE,26)
-	sphere3 = createCircles(18,0.18,POINTSIZE,26)
-	sphere4 = createCircles(14,0.12,POINTSIZE,26)
-	sphere5 = createCircles(10,0.06,POINTSIZE,26)
-	viz.MainView.move([0,0,3])
-	viz.callback(viz.KEYDOWN_EVENT, mykeyboard)
-	yield viztask.waitTime(100)
-	#viz.quit()
-
-def right():
-
-	# Create Fixation Dot
-	viz.startLayer(viz.POINTS)
-	viz.pointSize(POINTSIZE)
-	viz.vertexColor(viz.GRAY)
-	viz.vertex(0,1.8,4)
-	points = vijz.endLayer()
-	points.disable(viz.CULLING)
-
-		# Create the circles
-	sphere = createCircles(26,1,POINTSIZE,-26)
-	sphere2 = createCircles(22,0.8,POINTSIZE,-26)
-	sphere3 = createCircles(18,0.6,POINTSIZE,-26)
-	sphere4 = createCircles(14,0.4,POINTSIZE,-26)
-	sphere5 = createCircles(10,0.2,POINTSIZE,-26)
-	viz.MainView.move([0,0,3])
-	viz.callback(viz.KEYDOWN_EVENT, mykeyboard)
-	yield viztask.waitTime(100)
 
 def experiment():
 	yield viztask.waitKeyDown(' ')
