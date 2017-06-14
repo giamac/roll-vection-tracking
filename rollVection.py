@@ -156,21 +156,26 @@ class RollVection():
 
 		# Create Fixation Dot
 		viz.startLayer(viz.POINTS)
-		viz.pointSize(POINTSIZE)
+		viz.pointSize(self.POINTSIZE)
 		viz.vertexColor(viz.GRAY)
 		viz.vertex(0,1.8,4)
 		points = vijz.endLayer()
 		points.disable(viz.CULLING)
 
 		# Create the circles
-		sphere = createCircles(26,1,POINTSIZE,-26)
-		sphere2 = createCircles(22,0.8,POINTSIZE,-26)
-		sphere3 = createCircles(18,0.6,POINTSIZE,-26)
-		sphere4 = createCircles(14,0.4,POINTSIZE,-26)
-		sphere5 = createCircles(10,0.2,POINTSIZE,-26)
+		sphere = createCircles(26,1,self.POINTSIZE,-26)
+		sphere2 = createCircles(22,0.8,self.POINTSIZE,-26)
+		sphere3 = createCircles(18,0.6,self.POINTSIZE,-26)
+		sphere4 = createCircles(14,0.4,self.POINTSIZE,-26)
+		sphere5 = createCircles(10,0.2,self.POINTSIZE,-26)
 		viz.MainView.move([0,0,3])
 		viz.callback(viz.KEYDOWN_EVENT, mykeyboard)
 		yield viztask.waitTime(100)
+
+	def experiment(self):
+		yield viztask.waitKeyDown(' ')
+		yield self.motion()
+		viz.quit()
 
 class CenterOfMass(viz.EventClass):
 
@@ -180,10 +185,9 @@ class CenterOfMass(viz.EventClass):
 		viz.EventClass.__init__(self)
 		#self.total_M = viz.input('Please enter total body mass [kg]')
 
-		self.exp = MentalBodyRotation()
-		viztask.schedule(self.exp.SessionProcedure)
+		self.exp = RollVection()
+		viztask.schedule(self.exp.experiment)
 
-		self.TEMP_MBR_DATA = []
 		self.TEMP_COM_DATA = []
 		self.TEMP_TCBOM = []
 
@@ -333,23 +337,19 @@ class CenterOfMass(viz.EventClass):
 
 		# temporarily save framewise data into empty list
 
-		self.TEMP_MBR_DATA.append([self.exp.TRIAL_NO, self.exp.current_stimulus_name, self.exp.current_stimulus_yaw, self.exp.current_stimulus_roll,self.exp.STATE, self.exp.correct_response,
-					self.exp.response, self.exp.reactionTime, viz.tick(), (viz.tick() - self.exp.TRIAL_START_TIME), viz.getFrameNumber(), viz.getFrameElapsed(), viz.getFrameTime()])
 
 		self.TEMP_COM_DATA.append(self.test_segment_list) # self.segment_coordinates
 
 		self.TEMP_TCBOM.append(['TCBOM',X, Y, Z])
 
 
-# Class for the Circles
 
 
+def main():
 
+	# create instance of class
+	com = CenterOfMass()
+	# call method in event class
+	vizact.ontimer(0, com.calculate_segment_CoM)
 
-
-def experiment():
-	yield viztask.waitKeyDown(' ')
-	yield left()
-	viz.quit()
-
-viztask.schedule(experiment)
+if __name__ == '__main__': main()

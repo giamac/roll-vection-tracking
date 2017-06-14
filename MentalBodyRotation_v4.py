@@ -115,8 +115,8 @@ class MentalBodyRotation():
 		self.COM_DATA = []
 		#Tracking data?
 		self.TCBOM = []
-
-		#The
+		#---- DEFINITION OF TIRAL STUFF ----#
+		#The path to the stimuli
 		self.stimulus_path = 'models'#'l1etters'
 		# three types of stimuli both left and right
 		self.stimuli = ('LeftArmUp', 'RightArmUp','LeftArmOut', 'RightArmOut')
@@ -134,6 +134,7 @@ class MentalBodyRotation():
 		self.trials = self.comb(self.stimuli, self.stimulus_orientations, self.stimulus_view)
 		print('TRIALS: ', len(self.trials),  self.trials)
 
+		#--- INITIALIZATION OF TRIALS VARIABLES ---#
 		self.TRIAL_NO = 0
 		self.TRIAL_START_TIME = 0
 		self.reactionTime = None
@@ -172,6 +173,8 @@ class MentalBodyRotation():
 							for item in seq ]
 		return combinations
 
+	#Create the Stimuli from the list of trials, make the Stimulus
+	#invisible
 	def generate_stimuli(self):
 		for trial in self.trials:
 			print(trial)
