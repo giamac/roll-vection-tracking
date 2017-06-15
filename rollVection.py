@@ -2,7 +2,6 @@
 This script shows moving cirecles made of dots and measures the
 participants' sway
 """
-
 import viz, viztask, vizact, vizinput, vizshape
 import math
 import random
@@ -14,7 +13,6 @@ from string import maketrans
 import itertools, csv, time
 
 #start vrpn
-## Is this need here?
 vrpn = viz.addExtension('vrpn7.dle')
 
 #Ask for mode
