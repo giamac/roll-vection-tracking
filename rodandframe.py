@@ -52,67 +52,86 @@ viz.setMultiSample(8)
 viz.go()
 
 viz.fov(90)
+def experiment():
+	trialPositions = []
+	def block(direction):
+		
+		def trial(trialNumber):
 
-def trial():
+			def createFrame(direction):
 
-	position = []
+				viz.startLayer(viz.LINES)
+				viz.vertex(-.2,1.6,1)
+				viz.vertex(-.2,2,1)
 
-	def createFrame(direction):
+				viz.vertex(.2,1.6,1)
+				viz.vertex(.2,2,1)
 
-		viz.startLayer(viz.LINES)
-		viz.vertex(-.2,1.6,1)
-		viz.vertex(-.2,2,1)
+				viz.vertex(-.2,1.6,1)
+				viz.vertex(.2,1.6,1)
 
-		viz.vertex(.2,1.6,1)
-		viz.vertex(.2,2,1)
+				viz.vertex(-.2,2,1)
+				viz.vertex(.2,2,1)
 
-		viz.vertex(-.2,1.6,1)
-		viz.vertex(.2,1.6,1)
+				poly = viz.endLayer()
+				poly.visible(viz.OFF)
+				poly.center(0,1.8,1)
+				if direction == 'left':
+					poly.setEuler([0,0,20])
+				elif direction == 'right':
+					poly.setEuler([0,0,-20])
+				elif direction == 'none':
+					poly.remove()
+				return poly
 
-		viz.vertex(-.2,2,1)
-		viz.vertex(.2,2,1)
+			def createRod():
+				viz.startLayer(viz.POINTS)
+				viz.pointSize(4)
+				viz.vertex(0,1.65,1)
+				viz.vertex(0,1.70,1)
+				viz.vertex(0,1.75,1)
+				viz.vertex(0,1.80,1)
+				viz.vertex(0,1.85,1)
+				viz.vertex(0,1.90,1)
+				viz.vertex(0,1.95,1)
+				line = viz.endLayer()
+				line.visible(viz.OFF)
+				line.center(0,1.8,1)
+				initLinePos = 0 + 20 * random.uniform(-1,1)
+				line.setEuler([0,0,initLinePos])
+				class LineRotation(viz.EventClass):
+					def __init__(self):
+						viz.EventClass.__init__(self)
 
-		poly = viz.endLayer()
+						self.callback(viz.KEYDOWN_EVENT, self.keyboardAction)
 
-		poly.center(0,1.8,1)
-		if direction == 'left':
-			poly.setEuler([0,0,20])
-		elif direction == 'right':
-			poly.setEuler([0,0,-20])
+					def keyboardAction(self,key):
+						currentPosition = line.getEuler()
+						currentRoll = currentPosition[2]
+						if viz.key.isDown(viz.KEY_LEFT):
+							line.setEuler([0,0,currentRoll + 1])
+						elif viz.key.isDown(viz.KEY_RIGHT): 
+							line.setEuler([0,0,currentRoll -1])
+				LineRotation()
+				return line, initLinePos
+			
+			frame = createFrame(direction)
+			[line, initLinePos] = createRod()
+			line.visible(viz.ON)
+			frame.visible(viz.ON)
+			yield viztask.waitKeyDown(' ')
+			line.visible(viz.OFF)
+			frame.visible(viz.OFF)
+			with open('test.csv', 'a') as f:
+				wr = csv.writer(f, delimiter=';', lineterminator='\n', quoting=csv.QUOTE_ALL)
+				row = [direction, str(trialNumber + 1), initLinePos, line.getEuler()[2]]
+				wr.writerow(row)
+			
+		
 
+		for t in range(0,9):
+			yield viztask.waitKeyDown(' ')
+			viztask.schedule(trial(t))
 
-	def createRod():
-		viz.startLayer(viz.POINTS)
-		viz.pointSize(4)
-		viz.vertex(0,1.65,1)
-		viz.vertex(0,1.70,1)
-		viz.vertex(0,1.75,1)
-		viz.vertex(0,1.80,1)
-		viz.vertex(0,1.85,1)
-		viz.vertex(0,1.90,1)
-		viz.vertex(0,1.95,1)
-		line = viz.endLayer()
-
-		line.center(0,1.8,1)
-		initLinePos = 0 + 20 * random.uniform(-1,1)
-		line.setEuler([0,0,initLinePos])
-		class LineRotation(viz.EventClass):
-			def __init__(self):
-				viz.EventClass.__init__(self)
-
-				self.callback(viz.KEYDOWN_EVENT, self.keyboardAction)
-
-			def keyboardAction(self,key):
-				currentPosition = line.getEuler()
-				currentRoll = currentPosition[2]
-				if viz.key.isDown(viz.KEY_LEFT):
-					line.setEuler([0,0,currentRoll + 1])
-				elif viz.key.isDown(viz.KEY_RIGHT):
-					line.setEuler([0,0,currentRoll -1])
-		return position
-		LineRotation()
-
-	createFrame('right')
-	createRod()
-
-trial()
+	viztask.schedule(block('none'))
+experiment()
