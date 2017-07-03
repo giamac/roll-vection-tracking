@@ -14,6 +14,7 @@ import datetime
 from datetime import date
 from string import maketrans
 import itertools, csv, time
+import numpy
 
 #Ask for mode
 presentations = ['oculus','normal']
@@ -36,7 +37,7 @@ def participantInfo():
 		wr = csv.writer(f, delimiter=';', lineterminator='\n', quoting=csv.QUOTE_ALL)
 		row_demo = [subject, age, sex[sex_choice] ,handedness[handedness_choice] , datetime.datetime.fromtimestamp(ts).strftime('%Y-%d-%m %H:%M:%S')]
 		wr.writerow(row_demo)
-
+	return subject,datetime.datetime.fromtimestamp(ts).strftime('%Y-%d-%m %H:%M:%S')
 #-----------------------------------------------------
 
 # Set the viewpoint
@@ -53,10 +54,13 @@ viz.go()
 
 viz.fov(90)
 def experiment():
-	trialPositions = []
-	def block(direction):
-		
-		def trial(trialNumber):
+	[subj, date] = participantInfo()
+	
+	def block():
+		directions = ['left','right','none']
+		random.shuffle(directions)
+		shuffledDirections = numpy.repeat(directions,3)
+		def trial(direction,trialNumber):
 
 			def createFrame(direction):
 
@@ -122,16 +126,16 @@ def experiment():
 			yield viztask.waitKeyDown(' ')
 			line.visible(viz.OFF)
 			frame.visible(viz.OFF)
-			with open('test.csv', 'a') as f:
+			with open('data_rf/subj' + '_' + subj + '.csv', 'a') as f:
 				wr = csv.writer(f, delimiter=';', lineterminator='\n', quoting=csv.QUOTE_ALL)
 				row = [direction, str(trialNumber + 1), initLinePos, line.getEuler()[2]]
 				wr.writerow(row)
 			
 		
 
-		for t in range(0,9):
+		for t in range(0,len(shuffledDirections)):
 			yield viztask.waitKeyDown(' ')
-			viztask.schedule(trial(t))
+			viztask.schedule(trial(shuffledDirections[t],t))
 
-	viztask.schedule(block('none'))
+	viztask.schedule(block())
 experiment()
